@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">G</string>
+    <string name="app_name">Zalo Drive Backup</string>
+    <string name="file_created">File Created</string>
+    <string name="file_create_error">Create File Error</string>
 </resources>

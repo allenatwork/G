@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "583613120501",
+    "project_id": "zbackup-187308"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583613120501:android:76d5719904219c73",
+        "android_client_info": {
+          "package_name": "allen.g"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "583613120501-100qdl4bjb75mvtvfpf21p1623adlvo5.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "583613120501-cb8uarcl4f2a70rmr3svi7gepnpu1d7i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "allen.g",
+            "certificate_hash": "2cd3b223ac0ea52f7cde8518aff8a8f189c04127"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5nzxXMj31veBB5Q9GjzUs3vHuWCtelhw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
