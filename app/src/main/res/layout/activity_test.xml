@@ -5,10 +5,44 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tv"
+    <Button
+        android:id="@+id/bt_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="ZBackupDrive" />
+        android:text="Login" />
+
+    <TextView
+        android:id="@+id/login_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/bt_login"
+        android:layout_alignTop="@+id/bt_login"
+        android:layout_toRightOf="@+id/bt_login"
+        android:gravity="center_vertical"
+        android:text="Login status: non" />
+
+    <Button
+        android:id="@+id/choose_file"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_login"
+        android:text="Choose File" />
+
+    <TextView
+        android:id="@+id/file_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/choose_file"
+        android:layout_alignTop="@+id/choose_file"
+        android:layout_toRightOf="@+id/choose_file"
+        android:gravity="center_vertical"
+        android:text="Choosed File: None" />
+
+    <Button
+        android:id="@+id/upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/choose_file"
+        android:text="Start Upload" />
+
 </RelativeLayout>

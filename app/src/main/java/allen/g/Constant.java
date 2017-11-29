@@ -5,6 +5,6 @@ package allen.g;
  */
 
 public class Constant {
-    public static final String BASE_URL = "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable";
+    public static final String BASE_URL = "https://www.googleapis.com/btUpload/drive/v3/files?uploadType=resumable";
 
 }

@@ -1,28 +1,18 @@
-/**
- * Copyright 2013 Google Inc. All Rights Reserved.
- * <p>
- * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain a copy of the License at
- * <p>
- * <p>http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * <p>Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package allen.g;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -52,20 +42,42 @@ public class MainActivity extends Activity {
 
     private static final String TAG = "ZBackupDrive";
     private static final int REQUEST_CODE_SIGN_IN = 0;
+    private static final int REQUEST_CODE_CAPTURE_IMAGE = 1;
+    private static final int REQUEST_CODE_CREATOR = 2;
 
     private GoogleSignInClient mGoogleSignInClient;
+    private DriveClient mDriveClient;
     private DriveResourceClient mDriveResourceClient;
-
-    private TextView tv;
+    Button btUpload, btLogin;
+    TextView tvLoginStatus;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
-        tv = findViewById(R.id.tv);
-        signIn();
+        btUpload = findViewById(R.id.upload);
+        btLogin = findViewById(R.id.bt_login);
+        tvLoginStatus = findViewById(R.id.login_status);
+        btUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                saveFileToDrive();
+                createFileInAppFolder();
+            }
+        });
+
+        btLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signIn();
+
+            }
+        });
     }
 
+    /**
+     * Start sign in activity.
+     */
     private void signIn() {
         Log.i(TAG, "Start sign in");
         mGoogleSignInClient = buildGoogleSignInClient();
@@ -78,12 +90,79 @@ public class MainActivity extends Activity {
     private GoogleSignInClient buildGoogleSignInClient() {
         GoogleSignInOptions signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestScopes(Drive.SCOPE_APPFOLDER)
-                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestScopes(Drive.SCOPE_FILE)
                         .build();
         return GoogleSignIn.getClient(this, signInOptions);
     }
 
+    /**
+     * Create a new file and save it to Drive.
+     */
+    private void saveFileToDrive() {
+        // Start by creating a new contents, and setting a callback.
+        Log.i(TAG, "Creating new contents.");
+        final Bitmap image = createBitmapToSave();
+
+        mDriveResourceClient
+                .createContents()
+                .continueWithTask(
+                        new Continuation<DriveContents, Task<Void>>() {
+                            @Override
+                            public Task<Void> then(@NonNull Task<DriveContents> task) throws Exception {
+                                return createFileIntentSender(task.getResult(), image);
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.w(TAG, "Failed to create new contents.", e);
+                            }
+                        });
+    }
+
+    /**
+     * Creates an {@link IntentSender} to start a dialog activity with configured {@link
+     * CreateFileActivityOptions} for user to create a new photo in Drive.
+     */
+    private Task<Void> createFileIntentSender(DriveContents driveContents, Bitmap image) {
+        Log.i(TAG, "New contents created.");
+        // Get an output stream for the contents.
+        OutputStream outputStream = driveContents.getOutputStream();
+        // Write the bitmap data from it.
+        ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
+        try {
+            outputStream.write(bitmapStream.toByteArray());
+        } catch (IOException e) {
+            Log.w(TAG, "Unable to write file contents.", e);
+        }
+
+        // Create the initial metadata - MIME type and title.
+        // Note that the user will be able to change the title later.
+        MetadataChangeSet metadataChangeSet =
+                new MetadataChangeSet.Builder()
+                        .setMimeType("image/jpeg")
+                        .setTitle("Android Photo.png")
+                        .build();
+        // Set up options to configure and display the create file activity.
+        CreateFileActivityOptions createFileActivityOptions =
+                new CreateFileActivityOptions.Builder()
+                        .setInitialMetadata(metadataChangeSet)
+                        .setInitialDriveContents(driveContents)
+                        .build();
+
+        return mDriveClient
+                .newCreateFileActivityIntentSender(createFileActivityOptions)
+                .continueWith(
+                        new Continuation<IntentSender, Void>() {
+                            @Override
+                            public Void then(@NonNull Task<IntentSender> task) throws Exception {
+                                startIntentSenderForResult(task.getResult(), REQUEST_CODE_CREATOR, null, 0, 0, 0);
+                                return null;
+                            }
+                        });
+    }
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
@@ -91,29 +170,29 @@ public class MainActivity extends Activity {
         switch (requestCode) {
             case REQUEST_CODE_SIGN_IN:
                 Log.i(TAG, "Sign in request code");
+                // Called after user is signed in.
                 if (resultCode == RESULT_OK) {
                     Log.i(TAG, "Signed in successfully.");
-                    GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-                    mDriveResourceClient = Drive.getDriveResourceClient(this, account);
-                    handleDrive(account);
-                    updateUI(account);
-                } else {
-                    Toast.makeText(getApplicationContext(), "Signin not success", Toast.LENGTH_SHORT).show();
+                    // Use the last signed in account here since it already have a Drive scope.
+                    mDriveClient = Drive.getDriveClient(this, GoogleSignIn.getLastSignedInAccount(this));
+                    // Build a drive resource client.
+                    mDriveResourceClient =
+                            Drive.getDriveResourceClient(this, GoogleSignIn.getLastSignedInAccount(this));
+                    handleUI();
                 }
                 break;
         }
     }
 
-    private void updateUI(GoogleSignInAccount account) {
-        if (account != null) {
-            tv.setText(account.getDisplayName()+" - " + account.getIdToken());
-        } else {
-            tv.setText("SignIn not success");
-        }
+    private void handleUI() {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        tvLoginStatus.setText(account.getDisplayName());
     }
 
-    private void handleDrive(GoogleSignInAccount gacc) {
-//        createFileInAppFolder();
+    private Bitmap createBitmapToSave() {
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.small_image);
+
+        return bm;
     }
 
     private void createFileInAppFolder() {
@@ -130,7 +209,7 @@ public class MainActivity extends Activity {
                             Writer writer = new OutputStreamWriter(outputStream);
                             writer.write("Hello World!");
                         } catch (IOException e) {
-                            // Ignore
+                            //ignore
                         }
 
                         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
@@ -146,8 +225,7 @@ public class MainActivity extends Activity {
                         new OnSuccessListener<DriveFile>() {
                             @Override
                             public void onSuccess(DriveFile driveFile) {
-                                showMessage(getString(R.string.file_created) +
-                                        driveFile.getDriveId().encodeToString());
+                                Log.e(TAG, "Create file success");
 //                                finish();
                             }
                         })
@@ -155,20 +233,12 @@ public class MainActivity extends Activity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.e(TAG, "Unable to create file", e);
-                        showMessage(getString(R.string.file_create_error));
 //                        finish();
                     }
                 });
     }
 
-    private void showMessage(String string) {
-        Toast.makeText(this, string, Toast.LENGTH_SHORT).show();
-    }
-
     private DriveResourceClient getDriveResourceClient() {
         return mDriveResourceClient;
     }
-
-
-
 }
