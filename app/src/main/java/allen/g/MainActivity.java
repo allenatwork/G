@@ -6,7 +6,7 @@ import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -33,10 +33,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
@@ -50,7 +52,7 @@ public class MainActivity extends Activity {
     private DriveResourceClient mDriveResourceClient;
     Button btUpload, btLogin;
     TextView tvLoginStatus;
-
+    int MAX_BUFFER_SIZE = 1 * 1024 * 1024;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,11 +60,25 @@ public class MainActivity extends Activity {
         btUpload = findViewById(R.id.upload);
         btLogin = findViewById(R.id.bt_login);
         tvLoginStatus = findViewById(R.id.login_status);
+        String pathRoot = Environment.getExternalStorageDirectory().getPath();
+        String pictureDirectory = pathRoot + "/zalo/picture";
+        File pictureFolder = new File(pictureDirectory);
+        final ArrayList<String> listFile = new ArrayList<>();
+        if (pictureFolder.isDirectory()) {
+            File[] listFiles = pictureFolder.listFiles();
+            for (int i=0;i< listFiles.length;i++) {
+                if (listFiles[i].isFile() && listFiles[i].getName().contains(".jpg")) {
+                    listFile.add(listFiles[i].getPath());
+                }
+            }
+        }
+//        Log.d(TAG,"Path root = " + pictureDirectory);
+//        final String filePath = pathRoot + "/Download/toy.apk";
         btUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 //                saveFileToDrive();
-                createFileInAppFolder();
+                createFileInAppFolder(listFile.get(0));
             }
         });
 
@@ -195,8 +211,8 @@ public class MainActivity extends Activity {
         return bm;
     }
 
-    private void createFileInAppFolder() {
-        final Task<DriveFolder> appFolderTask = getDriveResourceClient().getAppFolder();
+    private void createFileInAppFolder(final String filePath) {
+        final Task<DriveFolder> appFolderTask = getDriveResourceClient().getRootFolder();
         final Task<DriveContents> createContentsTask = getDriveResourceClient().createContents();
         Tasks.whenAll(appFolderTask, createContentsTask)
                 .continueWithTask(new Continuation<Void, Task<DriveFile>>() {
@@ -205,16 +221,37 @@ public class MainActivity extends Activity {
                         DriveFolder parent = appFolderTask.getResult();
                         DriveContents contents = createContentsTask.getResult();
                         OutputStream outputStream = contents.getOutputStream();
+                        byte[] buffer;
+                        int bufferSize;
+                        int byteAvaiable;
+                        int byteRead;
+
+                        File file = new File(filePath);
+                        FileInputStream fileInputStream = null;
                         try {
-                            Writer writer = new OutputStreamWriter(outputStream);
-                            writer.write("Hello World!");
+                            fileInputStream = new FileInputStream(file);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+
+                        try {
+                            byteAvaiable = fileInputStream.available();
+                            bufferSize = Math.max(MAX_BUFFER_SIZE,byteAvaiable);
+                            buffer = new byte[bufferSize];
+                            byteRead = fileInputStream.read(buffer,0,bufferSize);
+                            while (byteRead > 0) {
+                                outputStream.write(buffer,0,bufferSize);
+                                byteAvaiable = fileInputStream.available();
+                                bufferSize = Math.max(byteAvaiable,MAX_BUFFER_SIZE);
+                                byteRead = fileInputStream.read(buffer,0,bufferSize);
+                            }
                         } catch (IOException e) {
-                            //ignore
+                            Log.d(TAG,e.getMessage());
                         }
 
                         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                                .setTitle("New file")
-                                .setMimeType("text/plain")
+                                .setTitle(file.getName())
+                                .setMimeType("image/*")
                                 .setStarred(true)
                                 .build();
 
@@ -225,15 +262,13 @@ public class MainActivity extends Activity {
                         new OnSuccessListener<DriveFile>() {
                             @Override
                             public void onSuccess(DriveFile driveFile) {
-                                Log.e(TAG, "Create file success");
-//                                finish();
+                                Log.e(TAG, "Create file success. File path = " + filePath);
                             }
                         })
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Unable to create file", e);
-//                        finish();
+                        Log.e(TAG, "Unable to create file: " + filePath , e);
                     }
                 });
     }
