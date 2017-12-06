@@ -37,7 +37,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     protected static final int REQUEST_CODE_RESOLUTION = 1;
     private static final String TAG = "ZBackupDrive";
     private GoogleApiClient mGoogleApiClient;
-    Button btUpload, btLogin;
+    Button btUpload, btLogin,btChooseAcc;
     TextView tvLoginStatus;
     String filePath;
 
@@ -50,6 +50,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         setContentView(R.layout.activity_test);
         btUpload = findViewById(R.id.upload);
         btLogin = findViewById(R.id.bt_login);
+        btChooseAcc = findViewById(R.id.bt_choose);
         tvLoginStatus = findViewById(R.id.login_status);
         String pathRoot = Environment.getExternalStorageDirectory().getPath();
         String pictureDirectory = pathRoot + "/zalo/picture";
@@ -84,12 +85,18 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
+                .setAccountName("nguyengocbro@gmail.com")
                 .addScope(Drive.SCOPE_APPFOLDER)
                 .addScope(Drive.SCOPE_FILE)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-        mGoogleApiClient.connect();
+//        mGoogleApiClient.connect();
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
+            mGoogleApiClient.clearDefaultAccountAndReconnect();
+        else {
+            mGoogleApiClient.connect();
+        }
     }
 
     @Override
