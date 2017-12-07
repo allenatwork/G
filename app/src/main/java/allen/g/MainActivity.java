@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
+import allen.g.PrepareBackupTask.PrepareBackupTask;
 import timber.log.Timber;
 
 
@@ -37,7 +38,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     protected static final int REQUEST_CODE_RESOLUTION = 1;
     private static final String TAG = "ZBackupDrive";
     private GoogleApiClient mGoogleApiClient;
-    Button btUpload, btLogin,btChooseAcc;
+    Button btUpload, btLogin, btChooseAcc;
     TextView tvLoginStatus;
     String filePath;
 
@@ -102,7 +103,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(TAG, "GoogleApiClient connected");
-
+        PrepareBackupTask prepareBackupTask = new PrepareBackupTask(mGoogleApiClient);
+        prepareBackupTask.execute();
     }
 
     public void createFolder() {
