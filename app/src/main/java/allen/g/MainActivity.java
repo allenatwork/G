@@ -1,5 +1,6 @@
 package allen.g;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -7,11 +8,16 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInApi;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -36,6 +42,7 @@ import timber.log.Timber;
 public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
     protected static final int REQUEST_CODE_RESOLUTION = 1;
+    public static final int CHOOSE_ACCOUNT = 2;
     private static final String TAG = "ZBackupDrive";
     private GoogleApiClient mGoogleApiClient;
     Button btUpload, btLogin, btChooseAcc;
@@ -81,30 +88,32 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         });
     }
 
-
-    private void requestLogin() {
-
+    @Override
+    protected void onResume() {
+        super.onResume();
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
-                .setAccountName("nguyengocbro@gmail.com")
                 .addScope(Drive.SCOPE_APPFOLDER)
                 .addScope(Drive.SCOPE_FILE)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-//        mGoogleApiClient.connect();
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
-            mGoogleApiClient.clearDefaultAccountAndReconnect();
-        else {
-            mGoogleApiClient.connect();
-        }
+        mGoogleApiClient.connect();
+    }
+
+    private void requestLogin() {
+//        mGoogleApiClient.clearDefaultAccountAndReconnect();
+        Intent intent = AccountManager.newChooseAccountIntent(null, null,
+                new String[]{"com.google"}, true, null, null,
+                null, null);
+        startActivityForResult(intent, CHOOSE_ACCOUNT);
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(TAG, "GoogleApiClient connected");
         PrepareBackupTask prepareBackupTask = new PrepareBackupTask(mGoogleApiClient);
-        prepareBackupTask.execute();
+
     }
 
     public void createFolder() {
@@ -241,6 +250,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         if (requestCode == REQUEST_CODE_RESOLUTION && resultCode == RESULT_OK) {
             mGoogleApiClient.connect();
         }
+
+        if (requestCode == CHOOSE_ACCOUNT && resultCode == RESULT_OK) {
+            Log.d(TAG,"user account: "+ data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+        }
+
     }
 
     @Override

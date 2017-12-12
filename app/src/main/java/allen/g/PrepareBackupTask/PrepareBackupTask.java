@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import allen.g.utils.CollectionUtil;
-import timber.log.Timber;
 
 /**
  * Created by local on 06/12/2017.
@@ -42,7 +41,6 @@ public class PrepareBackupTask extends AsyncTask<Void, Void, List<String>> {
     @Override
     protected List<String> doInBackground(Void... voids) {
         listFiles = new ArrayList<>();
-        Timber.d("Do in Background. " + Thread.currentThread().getName());
         Log.d(TAG, "Do in background " + Thread.currentThread().getName());
 
         final DriveFolder rootFolder = getRootFolder(mGoogleApiClient);
@@ -56,12 +54,10 @@ public class PrepareBackupTask extends AsyncTask<Void, Void, List<String>> {
             public void onResult(@NonNull DriveApi.MetadataBufferResult result) {
                 MetadataBuffer metadataBuffer = result.getMetadataBuffer();
                 if (metadataBuffer.getCount() <= 0) { // Backup folder not created
-                    Timber.d("Backup Folder not exist so now create one. Ofcourse backup folder will empty");
                     Log.d(TAG, "Backup Folder not exist so now create one. Ofcourse backup folder will empty");
                     createBackupFolder();
 
                 } else { // Backup folder exist
-                    Timber.d("Backup Folder exit. Now list all file ");
                     Log.d(TAG, "Backup Folder exit. Now list all file ");
                     Metadata metadata = metadataBuffer.get(0);
                     DriveId backupFolderId = metadata.getDriveId();
@@ -72,9 +68,9 @@ public class PrepareBackupTask extends AsyncTask<Void, Void, List<String>> {
             }
         });
         ArrayList<String> listLocalFile = getListFileInPictureFolder();
-        Log.d(TAG, "============LIST LOCAL FILES===========");
-        printList(listLocalFile);
-        Log.d(TAG, "============END LIST LOCAL FILES===========");
+//        Log.d(TAG, "============LIST LOCAL FILES===========");
+//        printList(listLocalFile);
+//        Log.d(TAG, "============END LIST LOCAL FILES===========");
         compareTwoList(listLocalFile, listFiles);
         return listFiles;
     }
@@ -103,7 +99,6 @@ public class PrepareBackupTask extends AsyncTask<Void, Void, List<String>> {
             @Override
             public void onResult(@NonNull DriveFolder.DriveFolderResult driveFolderResult) {
                 if (!driveFolderResult.getStatus().isSuccess()) {
-                    Timber.e("Create backup folder on Google Drive failed. Return");
                     Log.d(TAG, "Create backup folder on Google Drive failed. Return");
                     return;
                 }
@@ -133,19 +128,19 @@ public class PrepareBackupTask extends AsyncTask<Void, Void, List<String>> {
 
     private void compareTwoList(List<String> listLocal, List<String> listServer) {
         ArrayList<String> intersectionList = (ArrayList<String>) CollectionUtil.intersection(listLocal, listServer);
-        Log.d(TAG, "============LIST FILE INTERSECTION===========");
-        printList(intersectionList);
-        Log.d(TAG, "============END LIST FILE INTERSECTION===========");
+//        Log.d(TAG, "============LIST FILE INTERSECTION===========");
+//        printList(intersectionList);
+//        Log.d(TAG, "============END LIST FILE INTERSECTION===========");
         ArrayList<String> listNeedDel = (ArrayList<String>) CollectionUtil.subtract(listServer, intersectionList);
         ArrayList<String> listNeedAdd = (ArrayList<String>) CollectionUtil.subtract(listLocal, intersectionList);
-        int i;
-        Log.d(TAG, "============LIST FILE NEED DEL===========");
-        printList(listNeedDel);
-        Log.d(TAG, "============END LIST FILE NEED DEL===========");
-
-        Log.d(TAG, "============LIST FILE NEED ADD===========");
-        printList(listNeedAdd);
-        Log.d(TAG, "============END LIST FILE NEED ADD===========");
+//        int i;
+//        Log.d(TAG, "============LIST FILE NEED DEL===========");
+//        printList(listNeedDel);
+//        Log.d(TAG, "============END LIST FILE NEED DEL===========");
+//
+//        Log.d(TAG, "============LIST FILE NEED ADD===========");
+//        printList(listNeedAdd);
+//        Log.d(TAG, "============END LIST FILE NEED ADD===========");
     }
 
 
@@ -153,23 +148,19 @@ public class PrepareBackupTask extends AsyncTask<Void, Void, List<String>> {
         @Override
         public void onResult(@NonNull DriveApi.MetadataBufferResult result) {
             if (!result.getStatus().isSuccess()) {
-                Timber.e("Problem when retrieving files list ");
                 Log.d(TAG, "Problem when retrieving files list ");
                 return;
             }
-            Timber.e("============LIST FILE IN FOLDER===========");
-            Log.d(TAG, "============LIST FILE IN FOLDER===========");
+//            Log.d(TAG, "============LIST FILE IN FOLDER===========");
             MetadataBuffer metadataBuffer = result.getMetadataBuffer();
             int number_of_file = metadataBuffer.getCount();
             for (int i = 0; i < number_of_file; i++) {
                 Metadata metadata = metadataBuffer.get(i);
                 listFiles.add(metadata.getOriginalFilename());
-                Timber.d("File name get from folder :" + metadata.getOriginalFilename());
                 Log.d(TAG, "File name get from folder: " + metadata.getOriginalFilename());
             }
             metadataBuffer.release();
-            Timber.e("============END LIST FILE IN FOLDER===========");
-            Log.d(TAG, "============END LIST FILE IN FOLDER===========");
+//            Log.d(TAG, "============END LIST FILE IN FOLDER===========");
         }
     };
 
