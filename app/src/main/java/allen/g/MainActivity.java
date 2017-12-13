@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 import allen.g.PrepareBackupTask.PrepareBackupTask;
+import allen.g.utils.FolderInfo;
 import timber.log.Timber;
 
 
@@ -48,6 +49,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     Button btUpload, btLogin, btChooseAcc;
     TextView tvLoginStatus;
     String filePath;
+    String syncAccount;
 
     int MAX_BUFFER_SIZE = 1 * 1024 * 1024;
     private DriveFolder backupFolder;
@@ -90,6 +92,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     protected void onResume() {
+        String pathRoot = Environment.getExternalStorageDirectory().getPath();
+        String pictureDirectory = pathRoot + "/zalo/picture";
+        FolderInfo folderInfo = new FolderInfo(pictureDirectory);
+        folderInfo.printFolderInfo();
         super.onResume();
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
@@ -112,8 +118,6 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(TAG, "GoogleApiClient connected");
-        PrepareBackupTask prepareBackupTask = new PrepareBackupTask(mGoogleApiClient);
-
     }
 
     public void createFolder() {
@@ -132,6 +136,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                 String pathRoot = Environment.getExternalStorageDirectory().getPath();
                 String pictureDirectory = pathRoot + "/zalo/picture";
+                FolderInfo folderInfo = new FolderInfo(pictureDirectory);
+                folderInfo.printFolderInfo();
                 File pictureFolder = new File(pictureDirectory);
                 final ArrayList<String> listFile = new ArrayList<>();
                 if (pictureFolder.isDirectory()) {
@@ -249,12 +255,23 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         Log.d(TAG, "On Activity Result");
         if (requestCode == REQUEST_CODE_RESOLUTION && resultCode == RESULT_OK) {
             mGoogleApiClient.connect();
+        } else if (requestCode == CHOOSE_ACCOUNT && resultCode == RESULT_OK) {
+            Log.d(TAG, "user choose account: " + data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+            syncAccount = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            requestConnectDriveService(syncAccount);
         }
+    }
 
-        if (requestCode == CHOOSE_ACCOUNT && resultCode == RESULT_OK) {
-            Log.d(TAG,"user account: "+ data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
-        }
-
+    private void requestConnectDriveService(String email) {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_APPFOLDER)
+                .addScope(Drive.SCOPE_FILE)
+                .setAccountName(email)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        mGoogleApiClient.connect();
     }
 
     @Override
