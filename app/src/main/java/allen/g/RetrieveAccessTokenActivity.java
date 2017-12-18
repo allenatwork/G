@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -14,6 +15,10 @@ import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.api.services.drive.DriveScopes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
+import allen.g.network.GoogleDriveRestfulApiHandler;
+import allen.g.utils.FolderInfo;
 
 
 public class RetrieveAccessTokenActivity extends Activity implements View.OnClickListener {
@@ -29,10 +34,7 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
         setContentView(R.layout.activity_retrieve_access_token);
         findViewById(R.id.button_token).setOnClickListener(this);
 
-        // Manual integration? Pop an account chooser to get this:
         mAccountName = "nguyengocbro@gmail.com";
-        // Or if you have a GoogleApiClient connected:
-        // mAccountName = Plus.AccountApi.getAccountName(mGoogleApiClient);
     }
 
     @Override
@@ -73,7 +75,36 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             ((TextView) findViewById(R.id.token_value)).setText("Token Value: " + s);
+            requestUploadFileWithToken(s);
             Log.d("TAG", "Token: " + s);
         }
     }
+
+    public void requestUploadFileWithToken(final String token) {
+        if (token == null) {
+            Log.d(TAG, "Token null ! Return program");
+        }
+
+        String pathRoot = Environment.getExternalStorageDirectory().getPath();
+
+        String pictureDirectory = pathRoot + "/zalo/picture";
+
+        FolderInfo folderPicture = new FolderInfo(pictureDirectory);
+        ArrayList<String> listFile = folderPicture.getListFiles();
+        final String randomFile = pictureDirectory + "/" + listFile.get(4);
+        Log.d(TAG, "UPload file: " + randomFile);
+        final String uri = "https://www.googleapis.com/upload/drive/v3/files";
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GoogleDriveRestfulApiHandler restfulApiHandler = new GoogleDriveRestfulApiHandler(uri, token);
+                restfulApiHandler.uploadFile(randomFile);
+            }
+        });
+        thread.run();
+
+    }
+
+
 }
