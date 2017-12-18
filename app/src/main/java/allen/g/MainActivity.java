@@ -104,7 +104,29 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
 
     }
 
+    FetchProfileListener fetchProfileListener = new FetchProfileListener() {
+
+        @Override
+        public void onDataProcess(Object object) {
+
+        }
+
+        @Override
+        public void onDataError(Object object) {
+            if (object instanceof UserRecoverableAuthIOException) {
+                MainActivity.this.startActivityForResult(
+                        ((UserRecoverableAuthIOException) object).getIntent(),
+                        MainActivity.REQUEST_AUTHORIZATION);
+            }
+        }
+    };
+
     private void getResultsFromApi() {
+//        GetTokenTask task = new GetTokenTask(this, "nguyengocbro@gmail.com", DriveScopes.DRIVE);
+//        task.setFetchProfileListener(fetchProfileListener);
+//        task.execute();
+//        return;
+
         if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
         } else if (mCredential.getSelectedAccountName() == null) {
@@ -112,12 +134,9 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
         } else if (!isDeviceOnline()) {
             mOutputText.setText("No network connection available.");
         } else {
-//            new MakeRequestTask(mCredential).execute();
-            GoogleDriveBackupHandler googleDriveBackupHandler = new GoogleDriveBackupHandler(mCredential,this);
+            GoogleDriveBackupHandler googleDriveBackupHandler = new GoogleDriveBackupHandler(mCredential, this);
             googleDriveBackupHandler.backupMediatoGdrive();
         }
-//        GoogleDriveBackupHandler googleDriveBackupHandler = new GoogleDriveBackupHandler(mCredential);
-//        googleDriveBackupHandler.backupMediatoGdrive();
     }
 
     private boolean isGooglePlayServicesAvailable() {
@@ -194,115 +213,6 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
 
     }
 
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
-        private com.google.api.services.drive.Drive mService = null;
-        private Exception mLastError = null;
-
-        MakeRequestTask(GoogleAccountCredential credential) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.drive.Drive.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName("Drive API Android Quickstart")
-                    .build();
-        }
-
-        /**
-         * Background task to call Drive API.
-         *
-         * @param params no parameters needed for this task.
-         */
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            try {
-                return getDataFromApi();
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
-            }
-        }
-
-        /**
-         * Fetch a list of up to 10 file names and IDs.
-         *
-         * @return List of Strings describing files, or an empty list if no files
-         * found.
-         * @throws IOException
-         */
-        private List<String> getDataFromApi() throws IOException {
-            // Get a list of up to 10 files.
-            List<String> fileInfo = new ArrayList<>();
-            FileList result = mService.files().list()
-                    .setPageSize(10)
-                    .setFields("nextPageToken, files(id, name)")
-                    .execute();
-            List<File> files = result.getFiles();
-            if (files != null) {
-                for (File file : files) {
-                    Log.d(TAG, file.getName());
-                    fileInfo.add(String.format("%s (%s)\n",
-                            file.getName(), file.getId()));
-                }
-            }
-            return fileInfo;
-        }
-
-//        String pageToken = null;
-//do {
-//            FileList result = driveService.files().list()
-//                    .setQ("mimeType='image/jpeg'")
-//                    .setSpaces("drive")
-//                    .setFields("nextPageToken, items(id, title)")
-//                    .setPageToken(pageToken)
-//                    .execute();
-//            for (File file : result.getItems()) {
-//                System.out.printf("Found file: %s (%s)\n",
-//                        file.getTitle(), file.getId());
-//            }
-//            pageToken = result.getNextPageToken();
-//        } while (pageToken != null);
-
-
-        @Override
-        protected void onPreExecute() {
-            mOutputText.setText("");
-//            mProgress.show();
-        }
-
-        @Override
-        protected void onPostExecute(List<String> output) {
-//            mProgress.hide();
-            if (output == null || output.size() == 0) {
-                mOutputText.setText("No results returned.");
-            } else {
-                output.add(0, "Data retrieved using the Drive API:");
-                mOutputText.setText(TextUtils.join("\n", output));
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mProgress.hide();
-            if (mLastError != null) {
-                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
-                    showGooglePlayServicesAvailabilityErrorDialog(
-                            ((GooglePlayServicesAvailabilityIOException) mLastError)
-                                    .getConnectionStatusCode());
-                } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                    startActivityForResult(
-                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            MainActivity.REQUEST_AUTHORIZATION);
-                } else {
-                    mOutputText.setText("The following error occurred:\n"
-                            + mLastError.getMessage());
-                }
-            } else {
-                mOutputText.setText("Request cancelled.");
-            }
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -319,6 +229,8 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
                         editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
                         mCredential.setSelectedAccountName(accountName);
+
+
                         getResultsFromApi();
                     }
                 }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Environment;
 import android.util.Log;
 
+import com.google.android.gms.auth.GoogleAuthException;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -29,6 +30,7 @@ public class GoogleDriveBackupHandler {
     public static final String TAG = "Drive-Backup-Handler";
     public static final String BACKUP_FOLDER_NAME = "picture";
     int MAX_BUFFER_SIZE = 1 * 1024 * 1024;
+    GoogleAccountCredential credential;
 
 
     private ArrayList<String> listMediaNeedDel;
@@ -59,6 +61,7 @@ public class GoogleDriveBackupHandler {
 
     public GoogleDriveBackupHandler(GoogleAccountCredential credential, Activity activity) {
         this.activity = activity;
+        this.credential = credential;
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
         mService = new com.google.api.services.drive.Drive.Builder(
@@ -66,6 +69,7 @@ public class GoogleDriveBackupHandler {
                 .setApplicationName("Drive API Android Quickstart")
                 .build();
         String pathRoot = Environment.getExternalStorageDirectory().getPath();
+
         pictureDirectory = pathRoot + "/zalo/picture";
     }
 
@@ -299,6 +303,13 @@ public class GoogleDriveBackupHandler {
         }
 
         public void uploadFile(final String filePath) {
+            try {
+                Log.d(TAG, "Token = " + credential.getToken());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (GoogleAuthException e) {
+                e.printStackTrace();
+            }
             File driveFile = new File();
             driveFile.setName("Test_file.jpg");
             driveFile.setMimeType("image/*");
@@ -313,7 +324,7 @@ public class GoogleDriveBackupHandler {
                 Log.d(TAG, "File upload done with id: " + file.getId());
             } catch (IOException e) {
                 mLastError = e;
-                handleException (mLastError);
+                handleException(mLastError);
             }
 //            Drive.DriveApi.newDriveContents(mGoogleApiClient).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
 //                @Override
