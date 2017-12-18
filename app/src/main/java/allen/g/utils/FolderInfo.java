@@ -38,12 +38,16 @@ public class FolderInfo {
 
         for (File file : listFileArray) {
             if (file.isFile()) {
-                listFiles.add(file.getPath());
+                listFiles.add(file.getName());
                 folderSize += file.length();
             } else if (file.isDirectory()) {
                 goThroughFolder(file);
             }
         }
+    }
+
+    public ArrayList<String> getListFiles () {
+        return listFiles;
     }
 
     public void printListFileinFolder() {
