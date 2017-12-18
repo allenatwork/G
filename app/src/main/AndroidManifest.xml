@@ -17,21 +17,38 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
-            <!--<meta-data-->
-                <!--android:name="com.google.android.apps.drive.APP_ID"-->
-                <!--android:value="id=zbackup-187308" />-->
 
+            <!-- <meta-data -->
+            <!-- android:name="com.google.android.apps.drive.APP_ID" -->
+            <!-- android:value="id=zbackup-187308" /> -->
+
+            <!--<intent-filter>-->
+            <!--<action android:name="android.intent.action.MAIN" />-->
+
+            <!--<category android:name="android.intent.category.LAUNCHER" />-->
+
+            <!--&lt;!&ndash; <action android:name="com.google.android.apps.drive.DRIVE_OPEN" /> &ndash;&gt;-->
+
+
+            <!--&lt;!&ndash; <data android:mimeType="application/vnd.google-apps.drive-sdk.zbackup-187308" /> &ndash;&gt;-->
+            <!--&lt;!&ndash; <data android:mimeType="image/png" /> &ndash;&gt;-->
+            <!--&lt;!&ndash; <data android:mimeType="image/jpeg" /> &ndash;&gt;-->
+            <!--&lt;!&ndash; <data android:mimeType="image/jpg" /> &ndash;&gt;-->
+            <!--</intent-filter>-->
+        </activity>
+        <activity android:name=".RetrieveAccessTokenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
 
-                <!--<action android:name="com.google.android.apps.drive.DRIVE_OPEN" />-->
+                <!-- <action android:name="com.google.android.apps.drive.DRIVE_OPEN" /> -->
 
-                <!--<data android:mimeType="application/vnd.google-apps.drive-sdk.zbackup-187308" />-->
-                <!--<data android:mimeType="image/png" />-->
-                <!--<data android:mimeType="image/jpeg" />-->
-                <!--<data android:mimeType="image/jpg" />-->
+
+                <!-- <data android:mimeType="application/vnd.google-apps.drive-sdk.zbackup-187308" /> -->
+                <!-- <data android:mimeType="image/png" /> -->
+                <!-- <data android:mimeType="image/jpeg" /> -->
+                <!-- <data android:mimeType="image/jpg" /> -->
             </intent-filter>
         </activity>
     </application>
