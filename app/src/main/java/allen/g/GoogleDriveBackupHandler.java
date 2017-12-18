@@ -11,7 +11,6 @@ import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 
 import java.io.IOException;
@@ -246,7 +245,7 @@ public class GoogleDriveBackupHandler {
         numberOfFileUploaded = 0;
         numberOfFileNeedUpload = listFiles.size();
         if (numberOfFileNeedUpload > 0) {
-            for (int i = 2; i < numberOfFileNeedUpload; i++) {
+            for (int i = 2; i < 4; i++) {
                 UploadGoogleDriveTask uploadTask = new UploadGoogleDriveTask(pictureDirectory + "/" + listFiles.get(i), i);
                 uploadTask.setUploadTaskCallback(uploadTaskCallback);
                 uploadPool.execute(uploadTask);
