@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 import allen.g.PrepareBackupTask.PrepareBackupTask;
+import allen.g.utils.DdriveBackupView;
 import allen.g.utils.FolderInfo;
 import timber.log.Timber;
 
@@ -46,13 +47,15 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public static final int CHOOSE_ACCOUNT = 2;
     private static final String TAG = "ZBackupDrive";
     private GoogleApiClient mGoogleApiClient;
-    Button btUpload, btLogin, btChooseAcc;
+    Button btUpload, btLogin, btChooseAcc, btUpdate;
     TextView tvLoginStatus;
     String filePath;
     String syncAccount;
+    DdriveBackupView backupView;
 
     int MAX_BUFFER_SIZE = 1 * 1024 * 1024;
     private DriveFolder backupFolder;
+    int progress;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,6 +65,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         btLogin = findViewById(R.id.bt_login);
         btChooseAcc = findViewById(R.id.bt_choose);
         tvLoginStatus = findViewById(R.id.login_status);
+        btUpdate = findViewById(R.id.update);
+        backupView = findViewById(R.id.backup_view);
+        backupView.showInitialState();
         String pathRoot = Environment.getExternalStorageDirectory().getPath();
         String pictureDirectory = pathRoot + "/zalo/picture";
         File pictureFolder = new File(pictureDirectory);
@@ -86,6 +92,16 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             @Override
             public void onClick(View v) {
                 requestLogin();
+            }
+        });
+
+        btUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                progress += 10;
+                backupView.updateProgress(progress);
+                if (progress >= 100) backupView.showDoneState(true);
+                if (progress >= 100) backupView.showDoneState(true);
             }
         });
     }
