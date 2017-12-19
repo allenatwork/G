@@ -3,6 +3,8 @@ package allen.g.network;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,24 +21,48 @@ import java.util.ArrayList;
 public class DriveGetListTask extends AsyncTask {
     public static final String TAG = "Drive-Get-List";
     //    final String endPoint = "https://www.googleapis.com/drive/v3/files";
-    final String endPoint = "https://www.googleapis.com/drive/v3/files?pageSize=100";
+    public static final int PAGE_SIZE = 10;
+    final String endPoint = "https://www.googleapis.com/drive/v3/files";
     String token;
     ArrayList<DriveFileMetadata> listFiles;
+    HttpURLConnection conn;
 
     public DriveGetListTask(String token) {
         this.token = token;
     }
 
     @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        listFiles = new ArrayList<>();
+    }
+
+    @Override
     protected Object doInBackground(Object[] objects) {
-        HttpURLConnection conn;
+        getListFileofPagewithToken(null);
+        return null;
+    }
+
+    public String generateUrlEndpoint(String nextToken) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(endPoint).append("?pageSize=").append(PAGE_SIZE);
+        if (nextToken != null && nextToken.length() > 0) {
+            builder.append("&").append("pageToken=").append(nextToken);
+        }
+        String url = builder.toString();
+        Log.d(TAG + "-Url", url);
+        return url;
+    }
+
+    public void getListFileofPagewithToken(String nextToken) {
+        ListFileResponse response = null;
         try {
-            URL url = new URL(endPoint);
+            URL url = new URL(generateUrlEndpoint(nextToken));
             conn = (HttpURLConnection) url.openConnection();
             conn.setDoInput(true);
             conn.setDoOutput(false);
             conn.setRequestMethod("GET");
-            conn.setReadTimeout(5 * 1000);
+            conn.setReadTimeout(2 * 1000);
 
             conn.setRequestProperty("Authorization", "Bearer " + token);
 
@@ -51,16 +77,29 @@ public class DriveGetListTask extends AsyncTask {
                     stringBuffer.append(line);
                 }
                 Log.d(TAG, stringBuffer.toString());
-
+                response = new Gson().fromJson(stringBuffer.toString(), ListFileResponse.class);
                 bufferedReader.close();
+                inputStream.close();
             } else {
                 Log.d(TAG + "-FAIL", "Response code = " + responseCode);
+                //Todo: handle response different response code
             }
         } catch (MalformedURLException e) {
-
+            Log.d(TAG, e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d(TAG, e.getMessage());
         }
-        return null;
+        if (response != null) {
+            listFiles.addAll(response.getListFile());
+            if (response.getNextPageToken() != null && response.getNextPageToken().length() > 0) {
+                getListFileofPagewithToken(response.getNextPageToken());
+            } else {
+                Log.d(TAG + "-ListFile", "List File size:" + listFiles.size());
+            }
+        } else {
+
+        }
+
+
     }
 }
