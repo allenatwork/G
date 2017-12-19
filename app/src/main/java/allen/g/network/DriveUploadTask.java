@@ -3,12 +3,21 @@ package allen.g.network;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
+import org.apache.http.NameValuePair;
+
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.HttpURLConnection;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -41,13 +50,14 @@ public class DriveUploadTask extends AsyncTask<Void, Void, Void> {
         DataOutputStream dos;
         String lineEnd = "\r\n";
         String twoHyphens = "--";
-        String boundary = "*****";
+        String boundary = "foo_bar_baz";
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
         int maxBufferSize = 1 * 1024 * 1024;
         File sourceFile = new File(sourceFileUri);
         int serverResponseCode = -1;
         try {
+            DriveFile file = new DriveFile("allen_test.jpg");
 
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(sourceFile);
@@ -59,20 +69,33 @@ public class DriveUploadTask extends AsyncTask<Void, Void, Void> {
             conn.setDoOutput(true); // Allow Outputs
             conn.setUseCaches(false); // Don't use a Cached Copy
             conn.setRequestMethod("POST");
-//            conn.setRequestProperty("Connection", "Keep-Alive");
-//            conn.setRequestProperty("ENCTYPE", "multipart/form-data");
-//            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+            conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Authorization", "Bearer " + token);
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("Content-Type", "image/*");
-            conn.setRequestProperty("uploaded_file", fileName);
+            conn.setRequestProperty("Content-Type", "multipart/related; boundary=" + boundary);
+//            conn.setRequestProperty("Content-Length", "124773");
 
             dos = new DataOutputStream(conn.getOutputStream());
-//            dos.writeBytes("{\"mimeType\":\"image/*\",\"name\":\"Allen_test.jpg\"}");
-//
-//            dos.writeBytes(twoHyphens + boundary + lineEnd);
-//            dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + fileName + "\"" + lineEnd);
-//            dos.writeBytes(lineEnd);
+
+//            Write metadata part
+            StringBuilder builder = new StringBuilder();
+            builder.append(lineEnd);
+            builder.append(twoHyphens + boundary);
+            builder.append(lineEnd);
+            builder.append("Content-Type: application/json; charset=UTF-8");
+            builder.append(lineEnd);
+            builder.append(lineEnd);
+
+            builder.append(new Gson().toJson(file));
+
+            builder.append(lineEnd);
+            builder.append(lineEnd);
+            builder.append(twoHyphens + boundary);
+            builder.append(lineEnd);
+            builder.append("Content-Type: image/jpeg");
+            builder.append(lineEnd);
+            builder.append(lineEnd);
+            Log.d(TAG, "Metadata = " + builder.toString());
+            dos.writeBytes(builder.toString());
 
             // create a buffer of  maximum size
             bytesAvailable = fileInputStream.available();
@@ -91,10 +114,9 @@ public class DriveUploadTask extends AsyncTask<Void, Void, Void> {
                 bytesRead = fileInputStream.read(buffer, 0, bufferSize);
 
             }
-
-            // send multipart form data necesssary after file data...
             dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+            dos.writeBytes(twoHyphens + boundary + twoHyphens);
+            dos.writeBytes(lineEnd);
 
             fileInputStream.close();
             dos.flush();
@@ -103,16 +125,25 @@ public class DriveUploadTask extends AsyncTask<Void, Void, Void> {
             serverResponseCode = conn.getResponseCode();
             String serverResponseMessage = conn.getResponseMessage();
             Log.d(TAG, "Response code: " + serverResponseCode + ". With message: " + serverResponseMessage);
+            if (serverResponseCode == 400) {
+                InputStream errStream = conn.getErrorStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(errStream));
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    Log.d(TAG + "-Error", line);
+                }
+            } else {
+                InputStream responseStream = conn.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(responseStream));
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    Log.d(TAG + "-Success", line);
+                }
+            }
             if (serverResponseCode == 200) {
                 //Todo: upload complete
                 Log.d(TAG, "Upload complete");
             }
-
-            //close the streams //
-//            fileInputStream.close();
-//            dos.flush();
-//            dos.close();
-
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
             Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
@@ -121,5 +152,23 @@ public class DriveUploadTask extends AsyncTask<Void, Void, Void> {
         }
         return serverResponseCode;
 
+    }
+
+    private String getQuery(List<NameValuePair> params) throws UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        for (NameValuePair pair : params) {
+            if (first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode(pair.getName(), "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(pair.getValue(), "UTF-8"));
+        }
+
+        return result.toString();
     }
 }

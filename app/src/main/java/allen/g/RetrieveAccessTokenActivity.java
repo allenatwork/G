@@ -93,8 +93,8 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
         ArrayList<String> listFile = folderPicture.getListFiles();
         final String randomFile = pictureDirectory + "/" + listFile.get(4);
         Log.d(TAG, "UPload file: " + randomFile);
-        final String uri = "https://www.googleapis.com/upload/drive/v3/files";
-
+//        final String uri = "https://www.googleapis.com/upload/drive/v3/files";
+        final String uri = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
