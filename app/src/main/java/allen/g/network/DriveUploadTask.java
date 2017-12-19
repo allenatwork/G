@@ -57,7 +57,7 @@ public class DriveUploadTask extends AsyncTask<Void, Void, Void> {
         File sourceFile = new File(sourceFileUri);
         int serverResponseCode = -1;
         try {
-            DriveFile file = new DriveFile("allen_test.jpg");
+            DriveFileMetadata file = new DriveFileMetadata("allen_test.jpg");
 
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(sourceFile);
@@ -152,23 +152,5 @@ public class DriveUploadTask extends AsyncTask<Void, Void, Void> {
         }
         return serverResponseCode;
 
-    }
-
-    private String getQuery(List<NameValuePair> params) throws UnsupportedEncodingException {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-
-        for (NameValuePair pair : params) {
-            if (first)
-                first = false;
-            else
-                result.append("&");
-
-            result.append(URLEncoder.encode(pair.getName(), "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(pair.getValue(), "UTF-8"));
-        }
-
-        return result.toString();
     }
 }

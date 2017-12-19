@@ -99,7 +99,9 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
             @Override
             public void run() {
                 GoogleDriveRestfulApiHandler restfulApiHandler = new GoogleDriveRestfulApiHandler(uri, token);
-                restfulApiHandler.uploadFile(randomFile);
+//                restfulApiHandler.uploadFile(randomFile);
+                restfulApiHandler.getListFiles();
+
             }
         });
         thread.run();

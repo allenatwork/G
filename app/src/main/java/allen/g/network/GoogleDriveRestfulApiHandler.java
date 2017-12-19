@@ -27,4 +27,9 @@ public class GoogleDriveRestfulApiHandler {
         DriveUploadTask uploadTask = new DriveUploadTask(upLoadServerUri, filePath, token);
         uploadTask.execute();
     }
+
+    public void getListFiles() {
+        DriveGetListTask getListTask = new DriveGetListTask(token);
+        getListTask.execute();
+    }
 }
