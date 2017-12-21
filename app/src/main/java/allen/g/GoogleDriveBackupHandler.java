@@ -70,7 +70,7 @@ public class GoogleDriveBackupHandler {
                 .build();
         String pathRoot = Environment.getExternalStorageDirectory().getPath();
 
-        pictureDirectory = pathRoot + "/zalo/picture";
+        pictureDirectory = pathRoot + "/zalo";
     }
 
     public void setUpdateProgressCallback(GdriveBackupProgressCallback updateProgressCallback) {

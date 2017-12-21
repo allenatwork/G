@@ -1,6 +1,7 @@
 package allen.g.network;
 
 import android.os.Environment;
+import android.util.Log;
 
 /**
  * Created by local on 18/12/2017.
@@ -17,19 +18,20 @@ public class GoogleDriveRestfulApiHandler {
     }
 
     public void uploadFile(String filePath) {
-        DriveUploadTask uploadTask = new DriveUploadTask(upLoadServerUri, filePath, token);
-        uploadTask.execute();
+//        DriveUploadTask uploadTask = new DriveUploadTask(upLoadServerUri, filePath, token);
+//        uploadTask.execute();
     }
 
     public void downloadFile() {
-        DriveFileMetadata file = new DriveFileMetadata("7a7eacaeba5e31a857fb5463686bb03c.jpg");
-        file.setId("1PttAvpwriEC26uT_5F6Qvm8DtevCjgEE");
+        DriveFileMetadata file = new DriveFileMetadata("00837917916ec19d2d0a04f72e7a99de.jpg");
+        file.setId("1Y-aVkGFuQrZ0xmWrMBtIkFLv8ox0hf5l");
         String pathRoot = Environment.getExternalStorageDirectory().getPath();
-        String pictureDirectory = pathRoot + "/zalo/picture";
+        String pictureDirectory = pathRoot + "/zalo";
         file.setLocalPath(pictureDirectory);
+        Log.d(TAG,"Downlaod file : " + file.getFilePath());
         DriveDownloadTask downloadTask = new DriveDownloadTask(token, file);
         Thread download = new Thread(downloadTask);
-        download.run();
+        download.start();
     }
 
     public void getListFiles() {

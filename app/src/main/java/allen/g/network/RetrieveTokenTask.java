@@ -9,8 +9,6 @@ import android.util.Log;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
-import com.zing.zalo.db.backup.gdrive.GdriveServiceConfig;
-import com.zing.zalo.ui.zviews.SettingBackupView;
 
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -62,7 +60,7 @@ public class RetrieveTokenTask extends AsyncTask<String, Void, String> {
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
         } catch (UserRecoverableAuthException e) {
-            ((Activity) context).startActivityForResult(e.getIntent(), SettingBackupView.REQ_SIGN_IN_REQUIRED);
+//            ((Activity) context).startActivityForResult(e.getIntent(), SettingBackupView.REQ_SIGN_IN_REQUIRED);
         } catch (GoogleAuthException e) {
             Log.e(TAG, e.getMessage());
         }

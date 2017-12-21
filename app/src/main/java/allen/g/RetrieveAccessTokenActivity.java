@@ -35,7 +35,7 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
         setContentView(R.layout.activity_retrieve_access_token);
         findViewById(R.id.button_token).setOnClickListener(this);
 
-        mAccountName = "nguyengocbro@gmail.com";
+        mAccountName = "allenatwork2012@gmail.com";
     }
 
     @Override
@@ -82,7 +82,7 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             ((TextView) findViewById(R.id.token_value)).setText("Token Value: " + s);
-//            requestUploadFileWithToken(s);
+            requestUploadFileWithToken(s);
             Log.d("TAG", "Token: " + s);
         }
     }
@@ -94,24 +94,18 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
 
         String pathRoot = Environment.getExternalStorageDirectory().getPath();
 
-        String pictureDirectory = pathRoot + "/zalo/picture";
+        String pictureDirectory = pathRoot + "/zalo";
 
-        FolderInfo folderPicture = new FolderInfo(pictureDirectory);
-        ArrayList<String> listFile = folderPicture.getListFiles();
-        final String randomFile = pictureDirectory + "/" + listFile.get(4);
-        Log.d(TAG, "UPload file: " + randomFile);
+//        FolderInfo folderPicture = new FolderInfo(pictureDirectory);
+//        ArrayList<String> listFile = folderPicture.getListFiles();
+//        final String randomFile = pictureDirectory + "/" + listFile.get(4);
+        Log.d(TAG, "Picture directory:  " + pictureDirectory);
 //        final String uri = "https://www.googleapis.com/upload/drive/v3/files";
         final String uri = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+
                 GoogleDriveRestfulApiHandler restfulApiHandler = new GoogleDriveRestfulApiHandler(uri, token);
 //                restfulApiHandler.uploadFile(randomFile);
                 restfulApiHandler.downloadFile();
-
-            }
-        });
-        thread.run();
 
     }
 

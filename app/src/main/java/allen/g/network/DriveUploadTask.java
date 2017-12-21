@@ -3,7 +3,6 @@ package allen.g.network;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.zing.zalo.db.backup.gdrive.GdriveServiceConfig;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
