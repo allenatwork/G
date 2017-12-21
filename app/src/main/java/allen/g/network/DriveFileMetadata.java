@@ -92,4 +92,8 @@ public class DriveFileMetadata {
         File file = new File(getFilePath());
         return file.exists();
     }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 }

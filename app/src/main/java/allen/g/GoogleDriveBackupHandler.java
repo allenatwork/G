@@ -326,61 +326,6 @@ public class GoogleDriveBackupHandler {
                 mLastError = e;
                 handleException(mLastError);
             }
-//            Drive.DriveApi.newDriveContents(mGoogleApiClient).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
-//                @Override
-//                public void onResult(@NonNull DriveApi.DriveContentsResult result) {
-//                    if (!result.getStatus().isSuccess()) {
-//                        Log.d(TAG, "Connect not success");
-//                        return;
-//                    }
-//
-//                    final DriveContents driveContents = result.getDriveContents();
-//
-//                    OutputStream outputStream = driveContents.getOutputStream();
-//                    byte[] buffer;
-//                    int bufferSize;
-//                    int byteAvaiable;
-//                    int byteRead;
-//
-//                    File file = new File(filePath);
-//                    FileInputStream fileInputStream = null;
-//                    try {
-//                        fileInputStream = new FileInputStream(file);
-//                    } catch (FileNotFoundException e) {
-//                        Log.d(TAG, "A file in list not found:" + file.getAbsolutePath());
-//                    }
-//
-//                    try {
-//                        byteAvaiable = fileInputStream.available();
-//                        bufferSize = Math.max(MAX_BUFFER_SIZE, byteAvaiable);
-//                        buffer = new byte[bufferSize];
-//                        byteRead = fileInputStream.read(buffer, 0, bufferSize);
-//                        while (byteRead > 0) {
-//                            outputStream.write(buffer, 0, bufferSize);
-//                            byteAvaiable = fileInputStream.available();
-//                            bufferSize = Math.max(byteAvaiable, MAX_BUFFER_SIZE);
-//                            byteRead = fileInputStream.read(buffer, 0, bufferSize);
-//                        }
-//                    } catch (IOException e) {
-//                        Log.d(TAG, e.getMessage());
-//                    }
-//
-//                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-//                            .setTitle(file.getName())
-//                            .setMimeType("image/*")
-//                            .setStarred(true)
-//                            .build();
-//                    mBackupFolder.createFile(mGoogleApiClient, changeSet, driveContents).setResultCallback(createFileResultCallback);
-//
-//                    try {
-//                        fileInputStream.close();
-//                        outputStream.flush();
-//                        outputStream.close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
         }
 
         private void handleException(Exception mLastError) {
