@@ -1,14 +1,5 @@
 package allen.g.network;
 
-import android.util.Log;
-
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 /**
  * Created by local on 18/12/2017.
  */

@@ -17,6 +17,7 @@ import com.google.api.services.drive.DriveScopes;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import allen.g.network.GdriveServiceConfig;
 import allen.g.network.GoogleDriveRestfulApiHandler;
 import allen.g.utils.FolderInfo;
 
@@ -57,7 +58,13 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
         @Override
         protected String doInBackground(String... params) {
             String accountName = params[0];
-            String scopes = "oauth2: " + DriveScopes.DRIVE;
+            if (accountName == null && accountName.length() <= 0) return null;
+            String scopes;
+            if (!GdriveServiceConfig.IS_DEBUG) {
+                scopes = "oauth2: " + DriveScopes.DRIVE_APPDATA;
+            } else {
+                scopes = "oauth2: " + DriveScopes.DRIVE;
+            }
             String token = null;
             try {
                 token = GoogleAuthUtil.getToken(getApplicationContext(), accountName, scopes);

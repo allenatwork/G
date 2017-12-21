@@ -57,7 +57,7 @@ public class DriveUploadTask extends AsyncTask<Void, Void, Void> {
         File sourceFile = new File(sourceFileUri);
         int serverResponseCode = -1;
         try {
-            DriveFileMetadata file = new DriveFileMetadata("allen_test.jpg");
+            DriveFileMetadata file = new DriveFileMetadata("allen_test.jpg", null, null, GdriveServiceConfig.getParentFolderId());
 
             // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(sourceFile);

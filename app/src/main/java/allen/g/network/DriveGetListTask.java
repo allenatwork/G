@@ -46,6 +46,7 @@ public class DriveGetListTask extends AsyncTask {
     public String generateUrlEndpoint(String nextToken) {
         StringBuilder builder = new StringBuilder();
         builder.append(endPoint).append("?pageSize=").append(PAGE_SIZE);
+        builder.append("&").append("q=").append(GdriveServiceConfig.getQueryFiles());
         if (nextToken != null && nextToken.length() > 0) {
             builder.append("&").append("pageToken=").append(nextToken);
         }
@@ -58,6 +59,7 @@ public class DriveGetListTask extends AsyncTask {
         ListFileResponse response = null;
         try {
             URL url = new URL(generateUrlEndpoint(nextToken));
+            Log.d(TAG,url.toString());
             conn = (HttpURLConnection) url.openConnection();
             conn.setDoInput(true);
             conn.setDoOutput(false);
@@ -83,6 +85,17 @@ public class DriveGetListTask extends AsyncTask {
             } else {
                 Log.d(TAG + "-FAIL", "Response code = " + responseCode);
                 //Todo: handle response different response code
+                InputStream inputStream = conn.getErrorStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                String line;
+                StringBuffer stringBuffer = new StringBuffer();
+                while ((line = bufferedReader.readLine()) != null) {
+                    Log.d(TAG + "-SUCCESS", line);
+                    stringBuffer.append(line);
+                }
+                Log.d(TAG, stringBuffer.toString());
+                bufferedReader.close();
+                inputStream.close();
             }
         } catch (MalformedURLException e) {
             Log.d(TAG, e.getMessage());
