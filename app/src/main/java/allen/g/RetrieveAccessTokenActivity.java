@@ -82,7 +82,7 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             ((TextView) findViewById(R.id.token_value)).setText("Token Value: " + s);
-            requestUploadFileWithToken(s);
+//            requestUploadFileWithToken(s);
             Log.d("TAG", "Token: " + s);
         }
     }
@@ -107,7 +107,7 @@ public class RetrieveAccessTokenActivity extends Activity implements View.OnClic
             public void run() {
                 GoogleDriveRestfulApiHandler restfulApiHandler = new GoogleDriveRestfulApiHandler(uri, token);
 //                restfulApiHandler.uploadFile(randomFile);
-                restfulApiHandler.getListFiles();
+                restfulApiHandler.downloadFile();
 
             }
         });
