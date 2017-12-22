@@ -46,11 +46,6 @@ public class DriveDownloadTask implements Runnable {
             conn.setDoInput(true);
 
             conn.connect();
-            int lengh = conn.getContentLength();
-
-//            int responseCode = conn.getResponseCode();
-//            if (responseCode == HttpURLConnection.HTTP_OK) {
-//                InputStream inputStream = new BufferedInputStream(url.openStream(),8192);
                 InputStream inputStream = conn.getInputStream();
                 Log.d(TAG,"File path = " + fileNeedDownload.getFilePath());
 
